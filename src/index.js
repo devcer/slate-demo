@@ -61,7 +61,7 @@ const CustomEditor = {
     Transforms.setNodes(
       editor,
       { question: isActive ? null : true },
-      { match: (n) => Text.isText(n), split: true }
+      { match: (n) => Text.isText(n) }
     );
   },
 
@@ -112,6 +112,14 @@ const App = () => {
         <button
           onMouseDown={(event) => {
             event.preventDefault();
+            CustomEditor.toggleQuestionMark(editor);
+          }}
+        >
+          Question
+        </button>
+        <button
+          onMouseDown={(event) => {
+            event.preventDefault();
             CustomEditor.toggleCodeBlock(editor);
           }}
         >
@@ -150,7 +158,10 @@ const Leaf = (props) => {
   return (
     <span
       {...props.attributes}
-      style={{ fontWeight: props.leaf.bold ? "bold" : "normal" }}
+      style={{
+        fontWeight: props.leaf.bold ? "bold" : "normal",
+        color: props.leaf.question ? "pink" : "black"
+      }}
     >
       {props.children}
     </span>
