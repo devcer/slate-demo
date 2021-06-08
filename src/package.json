@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "name": "slate-reproductions",
+  "description": "A simple sandbox to reproduce Slate issues in a pared down editor.",
+  "keywords": [],
+  "main": "index.js",
+  "dependencies": {
+    "faker": "4.1.0",
+    "is-hotkey": "0.1.6",
+    "react": "16.8.6",
+    "react-dom": "16.8.6",
+    "slate": "0.57.1",
+    "slate-history": "0.57.1",
+    "slate-react": "0.57.1"
+  },
+  "devDependencies": {
+    "typescript": "3.7.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  }
+}
