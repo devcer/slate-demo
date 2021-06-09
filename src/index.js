@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import ReactDOM from "react-dom";
 import { createEditor, Editor, Transforms, Text } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
-import { withHistory } from "slate-history";
+// import { withHistory } from "slate-history";
 
 // Define a React component renderer for our code blocks.
 const CodeElement = (props) => {
@@ -13,9 +13,19 @@ const CodeElement = (props) => {
   );
 };
 
-// const QuestionElement = (props) => {
-//   return <p {...props.attributes}>{props.children}</p>;
-// };
+// Define a React component renderer for our code blocks.
+const SectionElement = (props) => {
+  return <span {...props.attributes}>------------------{props.children}</span>;
+};
+
+const QuestionElement = (props) => {
+  return (
+    <p {...props.attributes} style={{ color: "red" }}>
+      <span>/</span>
+      {props.children}
+    </p>
+  );
+};
 
 const DefaultElement = (props) => {
   return <p {...props.attributes}>{props.children}</p>;
@@ -48,6 +58,22 @@ const CustomEditor = {
     return !!match;
   },
 
+  isQuestionBlockActive(editor) {
+    const [match] = Editor.nodes(editor, {
+      match: (n) => n.type === "question"
+    });
+
+    return !!match;
+  },
+
+  isSectionBlockActive(editor) {
+    const [match] = Editor.nodes(editor, {
+      match: (n) => n.type === "section"
+    });
+
+    return !!match;
+  },
+
   toggleBoldMark(editor) {
     const isActive = CustomEditor.isBoldMarkActive(editor);
     Transforms.setNodes(
@@ -72,6 +98,23 @@ const CustomEditor = {
       { type: isActive ? null : "code" },
       { match: (n) => Editor.isBlock(editor, n) }
     );
+  },
+  toggleQuestionBlock(editor) {
+    const isActive = CustomEditor.isQuestionBlockActive(editor);
+    Transforms.setNodes(
+      editor,
+      { type: isActive ? null : "question" },
+      { match: (n) => Editor.isBlock(editor, n) }
+    );
+  },
+
+  toggleSectionBlock(editor) {
+    const isActive = CustomEditor.isSectionBlockActive(editor);
+    Transforms.setNodes(
+      editor,
+      { type: isActive ? null : "section" },
+      { match: (n) => Editor.isBlock(editor, n) }
+    );
   }
 };
 
@@ -88,6 +131,10 @@ const App = () => {
     switch (props.element.type) {
       case "code":
         return <CodeElement {...props} />;
+      case "section":
+        return <SectionElement {...props} />;
+      case "question":
+        return <QuestionElement {...props} />;
       default:
         return <DefaultElement {...props} />;
     }
@@ -115,7 +162,15 @@ const App = () => {
             CustomEditor.toggleQuestionMark(editor);
           }}
         >
-          Question
+          Question Inline
+        </button>
+        <button
+          onMouseDown={(event) => {
+            event.preventDefault();
+            CustomEditor.toggleQuestionBlock(editor);
+          }}
+        >
+          Question Block
         </button>
         <button
           onMouseDown={(event) => {
@@ -124,6 +179,14 @@ const App = () => {
           }}
         >
           Code Block
+        </button>
+        <button
+          onMouseDown={(event) => {
+            event.preventDefault();
+            CustomEditor.toggleSectionBlock(editor);
+          }}
+        >
+          Section
         </button>
       </div>
       <Editable
@@ -147,6 +210,14 @@ const App = () => {
               CustomEditor.toggleBoldMark(editor);
               break;
             }
+
+            case "/": {
+              event.preventDefault();
+              CustomEditor.toggleQuestionBlock(editor);
+              break;
+            }
+            default:
+              break;
           }
         }}
       />
@@ -159,10 +230,11 @@ const Leaf = (props) => {
     <span
       {...props.attributes}
       style={{
-        fontWeight: props.leaf.bold ? "bold" : "normal",
-        color: props.leaf.question ? "pink" : "black"
+        fontWeight: props.leaf.bold ? "bold" : "normal"
+        // color: props.leaf.question ? "red" : "black"
       }}
     >
+      {/* {props.leaf.question && <span>/</span>} */}
       {props.children}
     </span>
   );
