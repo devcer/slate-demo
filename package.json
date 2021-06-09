@@ -1,7 +1,7 @@
 {
   "private": true,
-  "name": "slate-reproductions-forked",
-  "description": "A simple sandbox to reproduce Slate issues in a pared down editor.",
+  "name": "slatejs-sample",
+  "description": "",
   "keywords": [],
   "main": "index.js",
   "dependencies": {

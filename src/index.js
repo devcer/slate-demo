@@ -8,6 +8,7 @@ import {
   Element as SlateElement
 } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
+import "./styles.css";
 // import { withHistory } from "slate-history";
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
 // Define a React component renderer for our code blocks.
@@ -79,7 +80,13 @@ const CustomEditor = {
 
     return !!match;
   },
+  isHeadingBlockActive(editor) {
+    const [match] = Editor.nodes(editor, {
+      match: (n) => n.type === "heading"
+    });
 
+    return !!match;
+  },
   isQuestionBlockActive(editor) {
     const [match] = Editor.nodes(editor, {
       match: (n) => n.type === "question"
@@ -144,6 +151,14 @@ const CustomEditor = {
       { match: (n) => Editor.isBlock(editor, n) }
     );
   },
+  toggleHeadingBlock(editor) {
+    const isActive = CustomEditor.isHeadingBlockActive(editor);
+    Transforms.setNodes(
+      editor,
+      { type: isActive ? null : "heading" },
+      { match: (n) => Editor.isBlock(editor, n) }
+    );
+  },
   toggleQuestionBlock(editor) {
     const isActive = CustomEditor.isQuestionBlockActive(editor);
     Transforms.setNodes(
@@ -194,16 +209,6 @@ const App = () => {
   ]);
 
   const renderElement = useCallback(({ attributes, children, element }) => {
-    // switch (props.element.type) {
-    //   case "code":
-    //     return <CodeElement {...props} />;
-    //   case "section":
-    //     return <SectionElement {...props} />;
-    //   case "question":
-    //     return <QuestionElement {...props} />;
-    //   default:
-    //     return <DefaultElement {...props} />;
-    // }
     switch (element.type) {
       case "block-quote":
         return <blockquote {...attributes}>{children}</blockquote>;
@@ -219,7 +224,7 @@ const App = () => {
         return <ol {...attributes}>{children}</ol>;
       case "question":
         return (
-          <p {...attributes} style={{ color: "red" }}>
+          <p {...attributes} style={{ color: "#f9005e" }}>
             <span>/</span>
             {children}
           </p>
@@ -230,6 +235,8 @@ const App = () => {
             <code>{children}</code>
           </pre>
         );
+      case "heading":
+        return <h1 {...attributes}>{children}</h1>;
       default:
         return <p {...attributes}>{children}</p>;
     }
@@ -286,6 +293,14 @@ const App = () => {
         <button
           onMouseDown={(event) => {
             event.preventDefault();
+            CustomEditor.toggleHeadingBlock(editor);
+          }}
+        >
+          Heading
+        </button>
+        <button
+          onMouseDown={(event) => {
+            event.preventDefault();
             CustomEditor.toggleQuestionBlock(editor);
           }}
         >
@@ -306,6 +321,13 @@ const App = () => {
           }}
         >
           Section
+        </button>
+        <button
+          onMouseDown={(event) => {
+            console.log(value);
+          }}
+        >
+          Print JSON
         </button>
       </div>
       <Editable
