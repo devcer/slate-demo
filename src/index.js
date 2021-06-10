@@ -7,7 +7,7 @@ import {
   Text,
   Element as SlateElement
 } from "slate";
-import { Slate, Editable, withReact } from "slate-react";
+import { Slate, Editable, withReact, useSelected } from "slate-react";
 import "./styles.css";
 import { withHistory } from "slate-history";
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
@@ -229,6 +229,10 @@ const App = () => {
   };
 
   const renderElement = useCallback(({ attributes, children, element }) => {
+    // const selected = useSelected();
+    const isEmpty =
+      children.props.node.children[0].text === "" &&
+      children.props.node.children.length === 1;
     switch (element.type) {
       case "block-quote":
         return <blockquote {...attributes}>{children}</blockquote>;
@@ -258,7 +262,14 @@ const App = () => {
       case "heading":
         return <h1 {...attributes}>{children}</h1>;
       default:
-        return <p {...attributes}>{children}</p>;
+        return (
+          <p
+            {...attributes}
+            className={isEmpty ? "selected-empty-element" : ""}
+          >
+            {children}
+          </p>
+        );
     }
   }, []);
 

@@ -5,6 +5,7 @@
   "keywords": [],
   "main": "index.js",
   "dependencies": {
+    "@udecode/slate-plugins-placeholder": "1.0.0-alpha.25",
     "faker": "4.1.0",
     "is-hotkey": "0.1.6",
     "react": "16.8.6",
