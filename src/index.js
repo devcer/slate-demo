@@ -9,7 +9,7 @@ import {
 } from "slate";
 import { Slate, Editable, withReact } from "slate-react";
 import "./styles.css";
-// import { withHistory } from "slate-history";
+import { withHistory } from "slate-history";
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
 // Define a React component renderer for our code blocks.
 const CodeElement = (props) => {
@@ -28,7 +28,7 @@ const SectionElement = (props) => {
 const QuestionElement = (props) => {
   return (
     <p {...props.attributes} style={{ color: "red" }}>
-      <span>/</span>
+      <span>/ </span>
       {props.children}
     </p>
   );
@@ -66,7 +66,7 @@ const CustomEditor = {
   },
   isQuestionMarkActive(editor) {
     const [match] = Editor.nodes(editor, {
-      match: (n) => n.question === true,
+      match: (n) => n.questionText === true,
       universal: true
     });
 
@@ -138,7 +138,7 @@ const CustomEditor = {
     const isActive = CustomEditor.isQuestionMarkActive(editor);
     Transforms.setNodes(
       editor,
-      { question: isActive ? null : true },
+      { questionText: isActive ? null : true },
       { match: (n) => Text.isText(n) }
     );
   },
@@ -163,7 +163,9 @@ const CustomEditor = {
     const isActive = CustomEditor.isQuestionBlockActive(editor);
     Transforms.setNodes(
       editor,
-      { type: isActive ? null : "question" },
+      {
+        type: isActive ? null : "question"
+      },
       { match: (n) => Editor.isBlock(editor, n) }
     );
   },
@@ -200,13 +202,31 @@ const CustomEditor = {
 };
 
 const App = () => {
-  const editor = useMemo(() => withReact(createEditor()), []);
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+  const { normalizeNode } = editor;
   const [value, setValue] = useState([
     {
       type: "paragraph",
-      children: [{ text: "A line of text in a paragraph." }]
+      children: [{ text: "This is a sample text" }]
     }
   ]);
+  editor.normalizeNode = (entry) => {
+    const [node, path] = entry;
+    if (Text.isText(node)) {
+      const { text } = node;
+      if (text.startsWith("/ ")) {
+        Transforms.delete(editor, {
+          at: {
+            anchor: { path: path, offset: 0 },
+            focus: { path: path, offset: 2 }
+          }
+        });
+        CustomEditor.toggleQuestionBlock(editor);
+        return;
+      }
+    }
+    normalizeNode(entry);
+  };
 
   const renderElement = useCallback(({ attributes, children, element }) => {
     switch (element.type) {
@@ -225,7 +245,7 @@ const App = () => {
       case "question":
         return (
           <p {...attributes} style={{ color: "#f9005e" }}>
-            <span>/</span>
+            <span>/ </span>
             {children}
           </p>
         );
@@ -298,6 +318,14 @@ const App = () => {
         >
           Heading
         </button>
+        {/* <button
+          onMouseDown={(event) => {
+            event.preventDefault();
+            CustomEditor.toggleQuestionMark(editor);
+          }}
+        >
+          Question Inline
+        </button> */}
         <button
           onMouseDown={(event) => {
             event.preventDefault();
@@ -314,14 +342,14 @@ const App = () => {
         >
           Code Block
         </button>
-        <button
+        {/* <button
           onMouseDown={(event) => {
             event.preventDefault();
             CustomEditor.toggleSectionBlock(editor);
           }}
         >
           Section
-        </button>
+        </button> */}
         <button
           onMouseDown={(event) => {
             console.log(value);
@@ -382,6 +410,10 @@ const Leaf = ({ attributes, children, leaf }) => {
   if (leaf.underline) {
     children = <u>{children}</u>;
   }
+
+  // if (leaf.questionText) {
+  //   children = <span>/ {children}</span>;
+  // }
 
   return <span {...attributes}>{children}</span>;
 };
